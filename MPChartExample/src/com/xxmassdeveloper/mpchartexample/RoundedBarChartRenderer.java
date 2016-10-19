@@ -1,6 +1,7 @@
 package com.xxmassdeveloper.mpchartexample;
 
 import android.graphics.Canvas;
+import android.graphics.RectF;
 
 import com.github.mikephil.charting.animation.ChartAnimator;
 import com.github.mikephil.charting.buffer.BarBuffer;
@@ -15,6 +16,8 @@ import com.github.mikephil.charting.utils.ViewPortHandler;
 
 public class RoundedBarChartRenderer extends BarChartRenderer
 {
+    private boolean mDrawRoundedBars = true;
+
     public RoundedBarChartRenderer(BarDataProvider chart,
                                    ChartAnimator animator,
                                    ViewPortHandler viewPortHandler)
@@ -22,11 +25,12 @@ public class RoundedBarChartRenderer extends BarChartRenderer
         super(chart, animator, viewPortHandler);
     }
 
-    @Override
+    float mRoundedBarRadius = 100f;
     protected void drawDataSet(Canvas c, IBarDataSet dataSet, int index) {
 
         Transformer trans = mChart.getTransformer(dataSet.getAxisDependency());
 
+        mShadowPaint.setColor(dataSet.getBarShadowColor());
         mBarBorderPaint.setColor(dataSet.getBarBorderColor());
         mBarBorderPaint.setStrokeWidth(Utils.convertDpToPixel(dataSet.getBarBorderWidth()));
 
@@ -35,79 +39,102 @@ public class RoundedBarChartRenderer extends BarChartRenderer
         float phaseX = mAnimator.getPhaseX();
         float phaseY = mAnimator.getPhaseY();
 
-        // draw the bar shadow before the values
-        if (mChart.isDrawBarShadowEnabled()) {
-            mShadowPaint.setColor(dataSet.getBarShadowColor());
-
-            BarData barData = mChart.getBarData();
-
-            final float barWidth = barData.getBarWidth();
-            final float barWidthHalf = barWidth / 2.0f;
-            float x;
-
-//            for (int i = 0, count = Math.min((int)(Math.ceil((float)(dataSet.getEntryCount()) * phaseX)), dataSet.getEntryCount());
-//                 i < count;
-//                 i++) {
-//
-//                BarEntry e = dataSet.getEntryForIndex(i);
-//
-//                x = e.getX();
-//
-////                mBarShadowRectBuffer.left = x - barWidthHalf;
-////                mBarShadowRectBuffer.right = x + barWidthHalf;
-////
-////                trans.rectValueToPixel(mBarShadowRectBuffer);
-//
-////                if (!mViewPortHandler.isInBoundsLeft(mBarShadowRectBuffer.right))
-////                    continue;
-////
-////                if (!mViewPortHandler.isInBoundsRight(mBarShadowRectBuffer.left))
-////                    break;
-////
-////                mBarShadowRectBuffer.top = mViewPortHandler.contentTop();
-////                mBarShadowRectBuffer.bottom = mViewPortHandler.contentBottom();
-////
-////                c.drawRect(mBarShadowRectBuffer, mShadowPaint);
-//            }
-        }
-
         // initialize the buffer
         BarBuffer buffer = mBarBuffers[index];
         buffer.setPhases(phaseX, phaseY);
+//        buffer.setBarSpace(-.1f);
+//        buffer.setBarSpace(dataSet.getBarSpace());
         buffer.setDataSet(index);
         buffer.setInverted(mChart.isInverted(dataSet.getAxisDependency()));
-        buffer.setBarWidth(mChart.getBarData().getBarWidth());
 
         buffer.feed(dataSet);
 
         trans.pointValuesToPixel(buffer.buffer);
 
-        final boolean isSingleColor = dataSet.getColors().size() == 1;
+        // draw the bar shadow before the values
+        if (mChart.isDrawBarShadowEnabled()) {
 
-        if (isSingleColor) {
-            mRenderPaint.setColor(dataSet.getColor());
+            for (int j = 0; j < buffer.size(); j += 4) {
+
+                if (!mViewPortHandler.isInBoundsLeft(buffer.buffer[j + 2]))
+                    continue;
+
+                if (!mViewPortHandler.isInBoundsRight(buffer.buffer[j]))
+                    break;
+
+                if (mDrawRoundedBars) {
+                    c.drawRoundRect(new RectF(buffer.buffer[j], mViewPortHandler.contentTop(),
+                                              buffer.buffer[j + 2],
+                                              mViewPortHandler.contentBottom()), mRoundedBarRadius, mRoundedBarRadius, mShadowPaint);
+                } else {
+                    c.drawRect(buffer.buffer[j], mViewPortHandler.contentTop(),
+                               buffer.buffer[j + 2],
+                               mViewPortHandler.contentBottom(), mShadowPaint);
+                }
+            }
         }
 
-        for (int j = 0; j < buffer.size(); j += 4) {
+        // if multiple colors
+        if (dataSet.getColors().size() > 1) {
 
-            if (!mViewPortHandler.isInBoundsLeft(buffer.buffer[j + 2]))
-                continue;
+            for (int j = 0; j < buffer.size(); j += 4) {
 
-            if (!mViewPortHandler.isInBoundsRight(buffer.buffer[j]))
-                break;
+                if (!mViewPortHandler.isInBoundsLeft(buffer.buffer[j + 2]))
+                    continue;
 
-            if (!isSingleColor) {
+                if (!mViewPortHandler.isInBoundsRight(buffer.buffer[j]))
+                    break;
+
                 // Set the color for the currently drawn value. If the index
                 // is out of bounds, reuse colors.
                 mRenderPaint.setColor(dataSet.getColor(j / 4));
+                if (mDrawRoundedBars) {
+                    c.drawRoundRect(new RectF(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
+                                              buffer.buffer[j + 3]), mRoundedBarRadius, mRoundedBarRadius, mRenderPaint);
+                } else {
+                    c.drawRect(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
+                               buffer.buffer[j + 3], mRenderPaint);
+                }
+
+                if (drawBorder) {
+                    if (mDrawRoundedBars) {
+                        c.drawRoundRect(new RectF(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
+                                                  buffer.buffer[j + 3]), mRoundedBarRadius, mRoundedBarRadius, mBarBorderPaint);
+                    } else {
+                        c.drawRect(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
+                                   buffer.buffer[j + 3], mBarBorderPaint);
+                    }
+                }
             }
+        } else {
 
-            c.drawRect(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
-                       buffer.buffer[j + 3], mRenderPaint);
+            mRenderPaint.setColor(dataSet.getColor());
 
-            if (drawBorder) {
-                c.drawRect(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
-                           buffer.buffer[j + 3], mBarBorderPaint);
+            for (int j = 0; j < buffer.size(); j += 4) {
+
+                if (!mViewPortHandler.isInBoundsLeft(buffer.buffer[j + 2]))
+                    continue;
+
+                if (!mViewPortHandler.isInBoundsRight(buffer.buffer[j]))
+                    break;
+
+                if (mDrawRoundedBars) {
+                    c.drawRoundRect(new RectF(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
+                                              buffer.buffer[j + 3]), mRoundedBarRadius, mRoundedBarRadius, mRenderPaint);
+                } else {
+                    c.drawRect(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
+                               buffer.buffer[j + 3], mRenderPaint);
+                }
+
+                if (drawBorder) {
+                    if (mDrawRoundedBars) {
+                        c.drawRoundRect(new RectF(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
+                                                  buffer.buffer[j + 3]), mRoundedBarRadius, mRoundedBarRadius, mBarBorderPaint);
+                    } else {
+                        c.drawRect(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
+                                   buffer.buffer[j + 3], mBarBorderPaint);
+                    }
+                }
             }
         }
     }
