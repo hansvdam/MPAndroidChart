@@ -45,6 +45,7 @@ public class BarChartActivityMultiDataset extends DemoBase
 
         mChart = (BarChart) findViewById(R.id.chart1);
         mChart.getDescription().setEnabled(false);
+        mChart.setRenderer(new RoundedBarChartRenderer(mChart, mChart.getAnimator(), mChart.getViewPortHandler()));
 
 //        mChart.setDrawBorders(true);
 
