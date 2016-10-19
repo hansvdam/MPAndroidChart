@@ -2,33 +2,20 @@
 package com.xxmassdeveloper.mpchartexample;
 
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.WindowManager;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.LargeValueFormatter;
-import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.github.mikephil.charting.renderer.XAxisRenderer;
-import com.github.mikephil.charting.utils.Transformer;
 import com.github.mikephil.charting.utils.ViewPortHandler;
-import com.xxmassdeveloper.mpchartexample.custom.MyMarkerView;
 import com.xxmassdeveloper.mpchartexample.notimportant.DemoBase;
 
 import java.util.ArrayList;
@@ -48,14 +35,21 @@ public class BarChartActivityMultiDataset extends DemoBase
 
         mChart = (BarChart) findViewById(R.id.chart1);
         mChart.getDescription().setEnabled(false);
+//        mChart.setRenderer(new BarChartRenderer());
         XAxis xAxis = mChart.getXAxis();
         ViewPortHandler viewPortHandler = mChart.getViewPortHandler();
-        mChart.setXAxisRenderer(new XAxisRenderer(viewPortHandler, xAxis, mChart.getTransformer(
+        mChart.setXAxisRenderer(new MyXaxisRenderer(viewPortHandler, xAxis, mChart.getTransformer(
                 YAxis.AxisDependency.LEFT)));
 //        mChart.setXAxisRenderer(new MyXaxisRender(viewPortHandler, xAxis,
 //                                                  new Transformer(viewPortHandler)));
 
-        mChart.setRenderer(new RoundedBarChartRenderer2(mChart, mChart.getAnimator(), mChart.getViewPortHandler()));
+        RoundedBarChartRenderer2 renderer = new RoundedBarChartRenderer2(mChart,
+                                                                         mChart.getAnimator(),
+                                                                         mChart.getViewPortHandler());
+        Drawable drawable = getResources().getDrawable(R.drawable.chart_label_background);
+
+        renderer.setLabelBackground(drawable);
+        mChart.setRenderer(renderer);
 
 //        mChart.setDrawBorders(true);
 
@@ -64,6 +58,7 @@ public class BarChartActivityMultiDataset extends DemoBase
 
         mChart.setDrawBarShadow(false);
 
+        mChart.setDrawValueAboveBar(true);
         mChart.setDrawGridBackground(false);
         setValues();
         // create a custom MarkerView (extend MarkerView) and specify the layout
@@ -138,9 +133,14 @@ public class BarChartActivityMultiDataset extends DemoBase
         {
             // create 4 DataSets
             set1 = new BarDataSet(yVals1, "Company A");
-            set1.setColor(Color.rgb(104, 241, 175));
+            set1.setDrawValues(false);
+            int rgb = Color.rgb(104, 241, 175);
+            set1.setColor(rgb);
             set2 = new BarDataSet(yVals2, "Company B");
-            set2.setColor(Color.rgb(164, 228, 251));
+            rgb = Color.rgb(164, 228, 251);
+            set2.setColor(rgb);
+            set2.setValueTextColor(rgb);
+            set2.setValueTextSize(10);
 
             BarData data = new BarData(set1, set2);
             data.setValueFormatter(new LargeValueFormatter());
