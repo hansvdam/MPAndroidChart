@@ -67,6 +67,7 @@ public class BarChartActivityMultiDataset extends DemoBase
         XAxis xAxis = mChart.getXAxis();
         xAxis.setTypeface(mTfLight);
         xAxis.setGranularity(1f);
+        xAxis.setDrawGridLines(false);
         xAxis.setCenterAxisLabels(true);
         xAxis.setValueFormatter(new IAxisValueFormatter()
         {
@@ -92,7 +93,6 @@ public class BarChartActivityMultiDataset extends DemoBase
 
     public void setValues()
     {
-
         float barWidth = 0.3f; // x3 dataset
         float barSpace = -.5f*barWidth; // x3 dataset
         float groupSpace = 1-2*(barSpace+barWidth);
