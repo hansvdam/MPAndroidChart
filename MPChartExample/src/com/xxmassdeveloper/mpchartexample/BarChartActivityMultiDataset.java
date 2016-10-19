@@ -83,12 +83,9 @@ public class BarChartActivityMultiDataset extends DemoBase
             }
         });
 
-        YAxis leftAxis = mChart.getAxisLeft();
-        leftAxis.setTypeface(mTfLight);
-        leftAxis.setValueFormatter(new LargeValueFormatter());
-        leftAxis.setDrawGridLines(false);
-        leftAxis.setSpaceTop(35f);
-        leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
+        YAxis axisLeft = mChart.getAxisLeft();
+        axisLeft.setEnabled(false);
+        axisLeft.setAxisMinimum(0f); // this replaces setStartAtZero(true)
 
         mChart.getAxisRight().setEnabled(false);
     }
@@ -96,12 +93,12 @@ public class BarChartActivityMultiDataset extends DemoBase
     public void setValues()
     {
 
-        float groupSpace = 0.2f;
+        float groupSpace = 1;
         float barSpace = -.1f; // x4 DataSet
         float barWidth = 0.2f; // x4 DataSet
         // (0.2 + 0.03) * 4 + 0.08 = 1.00 -> interval per "group"
 
-        int groupCount = 10 + 1;
+        int groupCount = 7;
         int startYear = 1980;
         int endYear = startYear + groupCount;
 
@@ -109,11 +106,11 @@ public class BarChartActivityMultiDataset extends DemoBase
         ArrayList<BarEntry> yVals2 = new ArrayList<BarEntry>();
 
         float randomMultiplier = 100 * 100000f;
-
+        float diff = endYear-startYear;
         for (int i = startYear; i < endYear; i++)
         {
-            yVals1.add(new BarEntry(i, (float) (Math.random() * randomMultiplier)));
-            yVals2.add(new BarEntry(i, (float) (Math.random() * randomMultiplier)));
+            yVals1.add(new BarEntry(.5f, (float) (Math.random() * randomMultiplier)));
+            yVals2.add(new BarEntry(.5f, (float) (Math.random() * randomMultiplier)));
         }
 
         BarDataSet set1, set2;
@@ -151,8 +148,10 @@ public class BarChartActivityMultiDataset extends DemoBase
 
         // barData.getGroupWith(...) is a helper that calculates the width each group needs based on the provided parameters
         mChart.getXAxis()
-                .setAxisMaximum(startYear + mChart.getBarData()
-                        .getGroupWidth(groupSpace, barSpace) * groupCount);
+                .setAxisMaximum(endYear);
+//        mChart.getXAxis()
+//                .setAxisMaximum(startYear + mChart.getBarData()
+//                        .getGroupWidth(groupSpace, barSpace) * groupCount);
         mChart.groupBars(startYear, groupSpace, barSpace);
         mChart.invalidate();
     }
