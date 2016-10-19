@@ -25,6 +25,9 @@ import com.github.mikephil.charting.formatter.LargeValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.github.mikephil.charting.renderer.XAxisRenderer;
+import com.github.mikephil.charting.utils.Transformer;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.xxmassdeveloper.mpchartexample.custom.MyMarkerView;
 import com.xxmassdeveloper.mpchartexample.notimportant.DemoBase;
 
@@ -45,6 +48,13 @@ public class BarChartActivityMultiDataset extends DemoBase
 
         mChart = (BarChart) findViewById(R.id.chart1);
         mChart.getDescription().setEnabled(false);
+        XAxis xAxis = mChart.getXAxis();
+        ViewPortHandler viewPortHandler = mChart.getViewPortHandler();
+        mChart.setXAxisRenderer(new XAxisRenderer(viewPortHandler, xAxis, mChart.getTransformer(
+                YAxis.AxisDependency.LEFT)));
+//        mChart.setXAxisRenderer(new MyXaxisRender(viewPortHandler, xAxis,
+//                                                  new Transformer(viewPortHandler)));
+
         mChart.setRenderer(new RoundedBarChartRenderer2(mChart, mChart.getAnimator(), mChart.getViewPortHandler()));
 
 //        mChart.setDrawBorders(true);
@@ -64,7 +74,6 @@ public class BarChartActivityMultiDataset extends DemoBase
 
         mChart.getLegend().setEnabled(false);
 
-        XAxis xAxis = mChart.getXAxis();
         xAxis.setTypeface(mTfLight);
         xAxis.setGranularity(1f);
         xAxis.setDrawGridLines(false);
