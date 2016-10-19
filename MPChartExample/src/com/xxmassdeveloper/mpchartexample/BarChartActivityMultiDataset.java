@@ -72,6 +72,8 @@ public class BarChartActivityMultiDataset extends DemoBase
         xAxis.setTypeface(mTfLight);
         xAxis.setGranularity(1f);
         xAxis.setDrawGridLines(false);
+        xAxis.setDrawAxisLine(false);
+        xAxis.setTextSize(15f);
         xAxis.setCenterAxisLabels(true);
         xAxis.setValueFormatter(new IAxisValueFormatter()
         {
